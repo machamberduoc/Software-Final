@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Document</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: white;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .slide {
+        width: 250px;
+        background-color:#ffc107;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        color: #6c757d;
+    }
+    .slide h2 {
+        margin-bottom: 20px;
+    }
+    .slide a {
+        padding: 15px 10px;
+        margin: 5px 0;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    .slide a:hover {
+        background-color: #6c757d;
+    }
+    .slide a.monit {
+        background-color: #ffc107;
+    }
+    .slide a.monit:hover {
+        background-color: #6c757d;
+    }
+    .slide a.logout {
+        margin-top: auto;
+        background-color: #ffc107;
+    }
+    .slide a.logout:hover {
+        background-color: #6c757d;
+    }
+    .corr {
+        flex: 1;
+        padding: 100px;
+        overflow-y: auto;
+    }
+    .corr h1 {
+        margin-top: 0;
+        font-size: 10px;
+        color: white;
+    }
+    .corr p {
+        color: #6c757d;
+    }
+    .head {
+        background-color: white;
+        color: white;
+        padding: 15px;
+        text-align: right;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 290px;
+        z-index: 1000;
+        display: flex;
+        align-items:  center;
+        justify-content:  flex-end;
+    }
+    .head img {
+        vertical-align: middle;
+        border-radius:  50%;
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+    }
+    .head span{
+        font-size: 14px;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 150px; 
+    }
+    .corr i {
+        color: #6c757d;
+        padding: 10px;
+    }
+    .options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: #ffc107;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            white-space: nowrap; 
+        }
+        .option {
+            display: block;
+            padding: 10px;
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+        .option:hover {
+            background: #6c757d;
+        }
+        .chart-container {
+            width: 100%;
+            height: 200px; /* Ajusta la altura según tus necesidades */
+        }
+    
+</style>
+<body>
+    <div class="slide">
+        <h2>ServPred</h2>
+        <a href="{% url 'inicio' %}">Inicio</a>
+        <a href="{% url  'menu' %}" class="monit">Menu</a>
+        <a href="{% url 'monitoreo' %}">Monitoreo</a>
+        <a href="{% url 'auditoria'%}">Auditoria</a>
+        <a href="{% url 'analisisdedatos' %}">Analisis de datos</a>
+        <a href="{% url 'analisispredictivo' %}">Analisis predictivo</a>
+        <a href="{% url 'recomendaciones' %}">Recomendaciones</a>
+        <a href="{% url 'logout'%}" class="logout">Cerrar Sesión</a>
+    </div>
+
+    <div class="corr"> 
+        <div class="head">
+            <i class="fas fa-envelope"></i>
+            <span id="email">correo@correo.com</span>
+            <div id="options" class="options">
+                <a href="{% url 'administracion' %}" class="option">Administración</a>
+                <a href="{% url 'logout' %}" class="option">Cerrar sesión</a>
+            </div>
+        </div>
+        
+        <div class="flex-grow-1 pt-5 mt-5">
+            <div class="container">
+                <h2 class="mb-4" style="color: #6c757d;">Monitoreo</h2>
+                <div class="scrollable-cards">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #6c757d;">Espacio libre por disco</h5>
+                                    <div class="chart-container">
+                                        <canvas id="diskSpaceChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #6c757d;">Espacio Total y Utilizado por Disco</h5>
+                                    <div class="chart-container">
+                                        <canvas id="diskUsageChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4 align-right">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #6c757d;">Temperatura de los discos</h5>
+                                    <div class="chart-container">
+                                        <canvas id="diskTempChart"></canvas>
+                                    </div>  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: #6c757d;">Media de consumo de los discos</h5>
+                                    <div class="chart-container">
+                                        <canvas id="diskConsumptionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script>
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+async function fetchMonitorData() {
+            try {
+                const response = await fetch('/api/monitores/');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+
+                // Limitar a los primeros 10 servidores
+                const limitedData = data.slice(5, 12);
+
+                // Extraer datos para el gráfico
+                const labels = limitedData.map(item => item.disknamem); // Etiquetas de servidores
+                const values = limitedData.map(item => item.freegigabytes); // Espacio libre en GB
+
+                // Configurar el gráfico
+                const ctx = document.getElementById('diskSpaceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Espacio Libre (GB)',
+                            data: values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchMonitorData);
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+async function fetchDiskData() {
+    try {
+        // Definir las letras de los discos
+        const selectedLetters = ['A', 'C', 'D', 'Y', 'X'];
+        
+        // Obtener los datos de la API
+        const response = await fetch('/api/monitores/');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+
+        // Filtrar datos para incluir solo un disco por cada letra
+        const filteredData = selectedLetters.map(letter => {
+            // Filtrar los discos por letra y seleccionar el primero encontrado
+            return data.find(item => item.disknamem.startsWith(letter + ':'));
+        }).filter(item => item !== undefined);
+
+        // Extraer datos para el gráfico
+        const labels = filteredData.map(item => item.disknamem);
+        const usedSpaceValues = filteredData.map(item => item.usedgigasbytsm);
+        const totalSpaceValues = filteredData.map(item => item.totalsizem);
+
+        // Calcular la media de espacio utilizado y total
+        const calculateMean = (values) => values.reduce((acc, value) => acc + value, 0) / values.length;
+        const meanUsedSpace = calculateMean(usedSpaceValues);
+        const meanTotalSpace = calculateMean(totalSpaceValues);
+
+        console.log('Media de Espacio Utilizado (GB):', meanUsedSpace);
+
+        // Configurar el gráfico de espacio total y utilizado
+        const ctx = document.getElementById('diskUsageChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Espacio Total (GB)',
+                        data: totalSpaceValues,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        // Ancho de las barras
+                        barThickness: 20,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
+                    },
+                    {
+                        label: 'Espacio Utilizado (GB)',
+                        data: usedSpaceValues,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        // Ancho de las barras
+                        barThickness: 20,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    x: {
+                        stacked: false,
+                        title: {
+                            display: true,
+                            text: 'Discos'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'GB'
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', fetchDiskData);
+
+
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+async function fetchAndCreateChart() {
+    try {
+        // Definir las letras de los discos a seleccionar
+        const selectedLetters = ['F', 'G', 'H', 'E', 'H', 'L', 'K'];
+        
+        // Obtener los datos de la API
+        const response = await fetch('/api/monitores/');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+
+        // Filtrar datos para incluir solo un disco por cada letra
+        const filteredData = selectedLetters.map(letter => {
+            return data.find(item => item.disknamem.startsWith(letter + ':'));
+        }).filter(item => item !== undefined);
+
+        // Extraer datos para calcular la media de consumo
+        const diskLabels = filteredData.map(item => item.disknamem);
+        const usedSpaceValues = filteredData.map(item => item.usedgigasbytsm);
+
+        // Calcular la media de consumo para cada disco
+        const meanUsedSpace = usedSpaceValues.reduce((acc, value) => acc + value, 0) / usedSpaceValues.length;
+
+        // Configurar el gráfico
+        const ctx = document.getElementById('diskConsumptionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: diskLabels,
+                datasets: [{
+                    label: 'Espacio Utilizado (GB)',
+                    data: usedSpaceValues,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Discos'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'GB'
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', fetchAndCreateChart);
+
+
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+async function fetchDiskTemperatureData() {
+    try {
+        // Definir las letras de los discos
+        const selectedLetters = ['Z', 'Y', 'R', 'D', 'E','F','G','H','I'];
+        
+        // Obtener los datos de la API
+        const response = await fetch('/api/monitores/');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+
+        // Filtrar datos para incluir solo un disco por cada letra
+        const filteredData = selectedLetters.map(letter => {
+            // Filtrar los discos por letra y seleccionar el primero encontrado
+            return data.find(item => item.disknamem.startsWith(letter + ':'));
+        }).filter(item => item !== undefined);
+
+        // Extraer datos para el gráfico
+        const labels = filteredData.map(item => item.disknamem);
+        const tempValues = filteredData.map(item => item.tempdiskm);
+
+        // Configurar el gráfico de temperatura
+        const ctx = document.getElementById('diskTempChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: tempValues,
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Discos'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperatura (°C)'
+                        },
+                        beginAtZero: false,
+                        suggestedMin: 0 // Ajusta esto según tus necesidades
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', fetchDiskTemperatureData);
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+document.addEventListener("DOMContentLoaded", function() {
+            // Hacer una solicitud a la API para obtener los datos del usuario autenticado
+            fetch('/api/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                // Si se ha autenticado correctamente y existe el correo
+                if (data && data.correo) {
+                    // Seleccionar el elemento del correo en el div .head
+                    let correoElement = document.querySelector('.head span');
+                    // Reemplazar el texto del span con el correo del usuario autenticado
+                    correoElement.textContent = data.correo;
+                } else {
+                    console.log('No se ha autenticado ningún usuario');
+                }
+            })
+            .catch(error => console.log('Error:', error));
+        });
+//-------------------------------------------------------------------------------------------------->
+document.addEventListener('DOMContentLoaded', function() {
+    const email = document.getElementById('email');
+    const options = document.getElementById('options');
+
+    email.addEventListener('click', function(event) {
+        event.stopPropagation(); // Evita que el clic se propague a otros elementos
+        if (options.style.display === 'block') {
+            options.style.display = 'none';
+        } else {
+            options.style.display = 'block';
+        }
+    });
+    document.addEventListener('click', function(event) {
+        if (!email.contains(event.target) && !options.contains(event.target)) {
+            options.style.display = 'none';
+        }
+    });
+});
+    </script>
+    
+    </div>
+</body>
+</html>
